@@ -1,0 +1,121 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,booktabs}
+\usepackage[hidelinks]{hyperref}
+\title{Exact certificates for sampled 17-city subtour vertices}
+\author{Claude Make No Mistakes}
+\date{25 November 2026}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We sampled 24 labeled non-half-integral vertices of the 17-city subtour
+polytope and certified the exact worst metric ratio for each. The largest
+ratio in the sample was \(15/13\). A 26-edge support gave \(10/9\).
+The search produced no counterexample to the metric TSP \(4/3\) conjecture.
+\end{abstract}
+
+\section{Certificate}
+Let \(V\) have \(n\geq3\) cities and \(E=\binom{V}{2}\). The subtour polytope
+consists of \(x\in[0,1]^E\) with \(x(\delta(v))=2\) at each vertex and
+\(x(\delta(S))\geq2\) for every nonempty proper \(S\subset V\).
+For a complete metric \(c\) let \(T(c)\) denote the minimum Hamiltonian
+tour cost. For a fixed feasible \(x\), define its worst metric ratio as
+\[
+    g(x)=\sup_{c\text{ a metric on }V} \frac{T(c)}{c\cdot x}.
+\]
+The ordinary integrality gap is \(\sup_x g(x)\). For each metric, the
+denominator is minimized by an extreme point, so surveying extreme
+points targets the conjecture directly \cite{chp}.
+
+For a lower bound, assign nonnegative integer lengths \(w\) to
+\(G=(V,\operatorname{supp}x)\), with \(w\cdot x>0\). Let \(d\) be the
+shortest-path distances in \(G\). Feasibility of \(x\) ensures connectivity.
+Every supported edge satisfies \(d_e\leq w_e\). If \(d\) has zero distances
+between distinct cities, add \(\varepsilon>0\) to each off-diagonal
+distance to obtain a metric \(d_\varepsilon\). Since \(x(E)=n\) and each
+tour has \(n\) edges,
+\[
+    T(d_\varepsilon)=T(d)+n\varepsilon,\qquad
+    d_\varepsilon\cdot x\leq w\cdot x+n\varepsilon.
+\]
+Taking \(\varepsilon\) down to zero gives \(T(d)/(w\cdot x)\leq g(x)\).
+A strict lower bound above \(4/3\) would give a metric counterexample.
+
+For an upper bound, take connected spanning Eulerian multigraphs on
+\(G\) with edge multiplicities \(a^j\) and rational probabilities
+\(p_j>0\) summing to one. By shortcutting an Euler tour in any metric
+\(c\), \(T(c)\leq c\cdot a^j\). If their expected edge multiplicities
+are bounded by \(Ux\) coordinatewise, then
+\[
+    T(c)\leq c\cdot\sum_j p_j a^j\leq U(c\cdot x).
+\]
+Matching lower and upper bounds determine \(g(x)\) exactly.
+
+\newpage
+\section{Generation and verification}
+We start from two triangles with corresponding vertices joined by
+internally disjoint paths of lengths \(4,5,5\). The triangle edges
+have weight \(1/2\) in \(x\), and the path edges have weight \(1\).
+We add random chords and optimize an objective on the resulting
+restricted subtour polytope by cut separation. We retain reconstructed
+points with at least 24 support edges and at least one coordinate
+outside \(\{0,1/2,1\}\). The three runs change the available chords or
+bias the objective toward the positive control's metric.
+
+For each retained point we search for lengths \(w\) minimizing
+\(w\cdot x\) subject to each discovered spanning Eulerian walk having
+length at least 1. A shortest tour in the graph metric closure expands
+to a separating walk. Approximate LP duals give candidate mixtures.
+The certificate includes integer lengths and rational weights. Its
+validity is independent of floating-point solver tolerances.
+
+The verifier uses exact flows from city 0 to every other city to
+certify cuts, and exact Gaussian elimination on degree equations
+and tight constraints to certify vertex status. All absent edges
+are fixed at zero. It also checks connectivity and even degrees
+of all multigraphs and recomputes \(T(d)\) with a separate integer
+Held--Karp implementation. Results are bundled as JSON Lines.
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+Search & Attempts & Labeled vertices & Largest \(g(x)\) \\
+\midrule
+Unrestricted chords & 1600 & 20 & \(23/20\) \\
+Restricted chord endpoints & 1800 & 2 & \(15/13\) \\
+Control-metric bias & 2200 & 2 & \(129/113\) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The positive control yielded \(53/43\), as reported for the
+17-city half-integral maximum in \cite{chp}. The sample includes
+15 vertices with 24 support edges, eight with 25, and one with 26.
+The search draws from structured supports and provides conclusions
+only for the recorded vertices.
+
+\section{Relation to existing results}
+Cook, Hougardy, and Petrich verify the conjecture through 16 cities
+in general and for half-integral vertices through 18 cities \cite{chp}.
+Villa, Vercesi, Barta, and Mastrolilli prove the \(n+6\) support bound
+\cite{vvbm}. Public artifacts report extensions to \(n+7\) and \(n+8\)
+\cite{regev,naser}. The 26-edge case lies beyond those support limits.
+
+\begin{thebibliography}{9}
+\bibitem{chp} W. Cook, S. Hougardy, and M. Petrich.
+\emph{Extending exact integrality gap computations for the metric TSP}.
+\href{https://arxiv.org/html/2603.12995v5}{arXiv:2603.12995v5}, 2026.
+\bibitem{vvbm} T. Villa, E. Vercesi, J. Barta, and M. Mastrolilli.
+\emph{The integrality gap of the traveling salesman problem is \(4/3\)
+if the LP solution has at most \(n+6\) non-zero components}.
+\href{https://arxiv.org/abs/2507.07003v3}{arXiv:2507.07003v3}, 2026.
+\bibitem{regev}
+\emph{An exact certificate proof for the \(n+7\) metric TSP support case}.
+\href{https://github.com/GiladR1979/metric-tsp-nplus7-certificates}{Public proof artifact}, 2026.
+\bibitem{naser} H. M. Naser.
+\emph{The metric TSP \(4/3\) bound with support at most \(n+8\):
+Structural reduction and slice-first enumeration}.
+\href{https://ssrn.com/abstract=7395957}{SSRN 7395957}, 2026.
+\end{thebibliography}
+\end{document}
